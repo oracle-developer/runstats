@@ -26,8 +26,9 @@ Version  Date            Description
 ### 4.0 Credits
 Credit of course must go to Tom Kyte. His RUNSTATS tool has proved invaluable to Oracle developers worldwide. All I've done here is re-factor it to work under different environments/circumstances, extend the reporting capability and include pause/resume functionality.
 
-### 5.0 Disclaimer
-See http://www.oracle-developer.net/disclaimer.php
+### 5.0 License
+This project uses the MIT License.
+See https://github.com/oracle-developer/runstats/blob/master/LICENSE
 
 Adrian Billington
-(c) www.oracle-developer.net
+www.oracle-developer.net

@@ -156,11 +156,11 @@ column if_resume noprint new_value v_rs_if_resume
 column if_stop   noprint new_value v_rs_if_stop
 
 select snap
-,      decode(snap, 'start', '', '--')  as if_start
-,      decode(snap, 'middle', '', '--') as if_middle
-,      decode(snap, 'pause', '', '--')  as if_pause
-,      decode(snap, 'resume', '', '--') as if_resume
-,      decode(snap, 'stop', '', '--')   as if_stop
+,      decode(snap, 'start', ' ', '--')  as if_start
+,      decode(snap, 'middle', ' ', '--') as if_middle
+,      decode(snap, 'pause', ' ', '--')  as if_pause
+,      decode(snap, 'resume', ' ', '--') as if_resume
+,      decode(snap, 'stop', ' ', '--')   as if_stop
 from  (
          select rtrim(lower('&p_rs_snap'),';') as snap
          from   dual

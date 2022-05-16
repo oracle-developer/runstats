@@ -7,11 +7,11 @@ create or replace package runstats_pkg authid current_user as
    ||
    || Script:      runstats_pkg.sql
    ||
-   || Version:     2.01
+   || Version:     2.02
    ||
    || Author:      Adrian Billington
    ||              www.oracle-developer.net
-   ||              (c) oracle-developer.net 
+   ||              (c) oracle-developer.net
    ||
    || Description: PL/SQL-only variation on Tom Kyte's RUNSTATS test harness.
    ||              Output is similar in format and structure but this version has
@@ -30,22 +30,22 @@ create or replace package runstats_pkg authid current_user as
    ||                    roles or other privileges;
    ||
    ||                 c) There is a new option to pause and resume runstats in
-   ||                    between runs. This is useful, for example, when you 
-   ||                    need to reset some data before the second run. See 
+   ||                    between runs. This is useful, for example, when you
+   ||                    need to reset some data before the second run. See
    ||                    usage notes below for details;
    ||
    ||                 d) There is a new set of advanced reporting options (see
    ||                    Usage section below);
    ||
    ||                 e) There is a new time model report;
-   ||                    
+   ||
    ||                 f) This requires at least version 10.1 to run because it
    ||                    makes use of collection methods such as MEMBER OF and
    ||                    also reports on V$SESS_TIME_MODEL statistics.
    ||
    ||                 g) Because this version uses associative arrays, a small
    ||                    "primer" procedure exists in the body to minimise the
-   ||                    potential side-effects on PGA memory reporting. As a 
+   ||                    potential side-effects on PGA memory reporting. As a
    ||                    result, PGA memory reporting when using this package
    ||                    should be valid (i.e. incurred by whatever is being
    ||                    tested and not from the intrusion of RUNSTATS_PKG).
@@ -75,7 +75,7 @@ create or replace package runstats_pkg authid current_user as
    ||              This mode will raise one of the following exceptions if not
    ||              used as above:
    ||
-   ||                -20000: Attempt to resume runstats when it was 
+   ||                -20000: Attempt to resume runstats when it was
    ||                        never paused.
    ||
    ||                -20001: Attempt to stop a paused runstats that was never
@@ -84,7 +84,7 @@ create or replace package runstats_pkg authid current_user as
    ||              Reporting Options
    ||              -------------------------------------------------------------
    ||              1. Output all statistics:
-   || 
+   ||
    ||                   runstats_pkg.rs_stop;
    ||
    ||              2. Output all statistics with delta value of at least 1,000:
@@ -108,7 +108,7 @@ create or replace package runstats_pkg authid current_user as
    ||
    || Notes:       1. Serveroutput must be on (and set higher than default);
    ||
-   ||              2. A free-standing, SQL*Plus-script version of RunStats is also 
+   ||              2. A free-standing, SQL*Plus-script version of RunStats is also
    ||                 available. The script version works without creating any
    ||                 database objects.
    ||
@@ -122,7 +122,7 @@ create or replace package runstats_pkg authid current_user as
    procedure rs_start;
    procedure rs_middle;
    procedure rs_pause;
-   procedure rs_resume; 
+   procedure rs_resume;
 
    procedure rs_stop;
 
@@ -193,8 +193,8 @@ create or replace package body runstats_pkg as
       index by pls_integer;
 
    /*
-   || This is the "runstats array". It will hold 3 sets of statistics on 
-   || a standard "start-middle-stop" run, or 4 sets of statistics on a 
+   || This is the "runstats array". It will hold 3 sets of statistics on
+   || a standard "start-middle-stop" run, or 4 sets of statistics on a
    || "start-pause-resume-stop" run...
    */
    ga_runstats aat_runstats;
@@ -213,7 +213,7 @@ create or replace package body runstats_pkg as
    -----------------------------------------------------------------------------
    procedure rs_info is
    begin
-      dbms_output.put_line('- RunStats v2.01 by Adrian Billington ' ||
+      dbms_output.put_line('- RunStats v2.02 by Adrian Billington ' ||
                            '(http://www.oracle-developer.net)');
       dbms_output.put_line('- Based on the original RUNSTATS utility by Tom Kyte');
    end rs_info;
@@ -244,7 +244,7 @@ create or replace package body runstats_pkg as
                           union all
                           select 'LATCH'
                           ,      name
-                          ,      gets 
+                          ,      gets
                           from   v$latch
                           union all
                           select 'TIME'
@@ -265,7 +265,7 @@ create or replace package body runstats_pkg as
    procedure rs_timer( p_run   in pls_integer,
                        p_timer in out nocopy aat_timer ) is
    begin
-      p_timer(p_run).ela_time := dbms_utility.get_time; 
+      p_timer(p_run).ela_time := dbms_utility.get_time;
       p_timer(p_run).cpu_time := dbms_utility.get_cpu_time;
    end rs_timer;
 
@@ -323,7 +323,7 @@ create or replace package body runstats_pkg as
 
       /*
       || Downside of using associative arrays is that we have to sort
-      || the output. So here's a couple of types and a variable to enable us 
+      || the output. So here's a couple of types and a variable to enable us
       || to do that...
       */
       type aat_runstats_output is table of st_output
@@ -333,7 +333,7 @@ create or replace package body runstats_pkg as
       aa_runstats_sorted aat_runstats_sorted; --<-- stat/latch statistics
       aa_stmstats_sorted aat_runstats_sorted; --<-- time model statistics
       aa_tmrstats_sorted aat_runstats_sorted; --<-- timer statistics
-      
+
       /*
       || Procedure to add a statistic to the sorted runstats or time model stats array...
       */
@@ -369,7 +369,7 @@ create or replace package body runstats_pkg as
       end s;
 
       /*
-      || Small function to calculate the statistic for a run. Calculates 
+      || Small function to calculate the statistic for a run. Calculates
       || the difference between the start and end offset for a run in the
       || runstats array...
       */
@@ -377,7 +377,7 @@ create or replace package body runstats_pkg as
                    p_end_offset   in pls_integer,
                    p_statname     in st_statname ) return number is
       begin
-         return ga_runstats(p_end_offset)(p_statname).value - 
+         return ga_runstats(p_end_offset)(p_statname).value -
                 ga_runstats(p_start_offset)(p_statname).value;
       end f;
 
@@ -422,7 +422,7 @@ create or replace package body runstats_pkg as
             dbms_output.put_line(rpad('Type',6) || rpad('Name',50) || lpad('Run1',13) ||
                                  lpad('Run2',13) || lpad('Diff',13));
             dbms_output.put_line(rpad('-',5,'-') || ' ' || rpad('-',50,'-') || ' ' ||
-                                 rpad('-',12,'-') || ' ' || rpad('-',12,'-') || ' ' || 
+                                 rpad('-',12,'-') || ' ' || rpad('-',12,'-') || ' ' ||
                                  rpad('-',12,'-'));
          end if;
       end sh;
@@ -468,7 +468,7 @@ create or replace package body runstats_pkg as
       */
       nl;
       div('=');
-      dbms_output.put_line('RunStats report : ' || 
+      dbms_output.put_line('RunStats report : ' ||
                               to_char(sysdate,'dd-MON-YYYY hh24:mi:ss'));
       div('=');
 
@@ -487,7 +487,7 @@ create or replace package body runstats_pkg as
       o(aa_tmrstats_sorted);
       nl;
       dbms_output.put_line( 'Comments:' );
-      dbms_output.put_line( '1) ' || case 
+      dbms_output.put_line( '1) ' || case
                                         when t1.ela_time = t2.ela_time
                                         then 'Run1 took the same time as Run2'
                                         when t2.ela_time > t1.ela_time
@@ -499,10 +499,10 @@ create or replace package body runstats_pkg as
       dbms_output.put_line( '2) ' || case
                                         when t1.cpu_time = t2.cpu_time
                                         then 'Run1 used the same amount of CPU time as Run2'
-                                        when t2.ela_time > t1.ela_time
-                                        then 'Run1 used ' || round((1-(t1.ela_time/t2.ela_time))*100,1) ||
+                                        when t2.cpu_time > t1.cpu_time
+                                        then 'Run1 used ' || round((1-(t1.cpu_time/t2.cpu_time))*100,1) ||
                                              '% less CPU time than Run2'
-                                       else 'Run2 used ' || round((1-(t2.ela_time/t1.ela_time))*100,1) ||
+                                       else 'Run2 used ' || round((1-(t2.cpu_time/t1.cpu_time))*100,1) ||
                                              '% less CPU time than Run1'
                                      end );
 
@@ -524,7 +524,7 @@ create or replace package body runstats_pkg as
          r2 := f(s2,e2,ix);
 
          /*
-         || If it's a statistic we want to output, then output it. Now here's the 
+         || If it's a statistic we want to output, then output it. Now here's the
          || downside of using purely associative arrays - we don't have any easy way of sorting.
          || So we have to do it ourselves. A bit of a pain, but simple enough...
          */
@@ -534,10 +534,10 @@ create or replace package body runstats_pkg as
              and (   (p_difference_threshold is not null and abs(r2-r1) >= p_difference_threshold)
                   or (p_statnames is not empty and ix member of p_statnames)
                   or (p_statname_like is not null and ix like '%'||p_statname_like||'%')))
-         then 
+         then
             s(st,ix,r1,r2);
          end if;
-         
+
          /*
          || Keep a running tally of latching...
          */
@@ -548,7 +548,7 @@ create or replace package body runstats_pkg as
 
          /*
          || Next statname please...
-         */ 
+         */
          ix := ga_runstats(s1).next(ix);
 
       end loop;
@@ -558,7 +558,7 @@ create or replace package body runstats_pkg as
       */
       sh('Statistics report');
       o(aa_runstats_sorted);
-      
+
       /*
       || Total latches report...
       */
@@ -567,7 +567,7 @@ create or replace package body runstats_pkg as
       o(aa_runstats_sorted);
       nl;
       dbms_output.put_line('Comments:');
-      dbms_output.put_line( '1) ' || case 
+      dbms_output.put_line( '1) ' || case
                                         when l1 = l2
                                         then 'Run1 used the same number of latches as Run2'
                                         when l2 > l1
@@ -699,4 +699,3 @@ end runstats_pkg;
 
 create or replace public synonym runstats_pkg for runstats_pkg;
 grant execute on runstats_pkg to public;
-

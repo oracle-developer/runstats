@@ -3,50 +3,50 @@
 -- ----------------------------------------------------------------------------------------------
 --
 -- Utility:         RunStats
---                  
+--
 -- Script:          runstats.sql
---                  
--- Version:         2.01
---                  
+--
+-- Version:         2.02
+--
 -- Author:          Adrian Billington
 --                  www.oracle-developer.net
---                  (c) oracle-developer.net 
---                  
+--                  (c) oracle-developer.net
+--
 -- Description:     SQL*Plus-only variation on the RunStats utility, based on Tom Kyte's
 --                  original tool of the same name. This runs as a standalone script (i.e.
 --                  no database objects need to be created).
 --
---                  Output is similar in format and structure but this version has more 
+--                  Output is similar in format and structure but this version has more
 --                  reporting options and additional reports (see Key Differences below).
---                  
+--
 --                  Key Differences
 --                  ---------------
---                  
+--
 --                     a) This is a SQL*Plus script that requires no objects to be created;
---                  
+--
 --                     b) There is a new option to pause and resume runstats in
---                        between runs. This is useful, for example, when you 
---                        need to reset some data before the second run. See 
+--                        between runs. This is useful, for example, when you
+--                        need to reset some data before the second run. See
 --                        usage notes below for details;
---     
+--
 --                     c) There is a new set of advanced reporting options (see
 --                        Usage section below);
---     
+--
 --                     d) There is a new time model report;
---                        
+--
 --                     e) This requires at least version 10.1 to run because it
 --                        makes use of collection methods such as MEMBER OF and
 --                        also reports on V$SESS_TIME_MODEL statistics.
---     
+--
 -- Configuration:   Edit the c_ms_rmcmd variable in the Constants section at the start of this
 --                  script to use the correct file deletion command for your SQL*Plus client
 --                  platform. It is defaulted to a Windows "del" command, so you will need to
 --                  change it if you are using a Linux/Unix SQL*Plus client.
---                  
+--
 --                  Reason: To make this run in standalone mode, a couple of temporary files
 --                  are written to your current directory. These files are automatically
 --                  removed on completion of this script.
---                  
+--
 -- Usage:           Standard Runstats
 --                  -------------------------------------------------------------
 --                  @runstats start
@@ -55,7 +55,7 @@
 --                  --<do run 2>--
 --                  @runstats stop [reporting options] [include time model]
 --                  END;
---    
+--
 --                  Resumable Runstats
 --                  -------------------------------------------------------------
 --                  @runstats start
@@ -65,7 +65,7 @@
 --                  @runstats resume
 --                  --<do run 2>--
 --                  @runstats stop [reporting options] [include time model]
---    
+--
 --                  Optional Reporting Parameter Formats
 --                  ------------------------------------
 --
@@ -81,33 +81,33 @@
 -- Examples:        Reporting Options (using short formats)
 --                  -------------------------------------------------------------
 --                  1. Output all statistics:
---     
+--
 --                       @runstats stop
---    
+--
 --                  2. Output all statistics with delta value of at least 1,000:
---    
+--
 --                       @runstats stop t=1000
---    
+--
 --                  3. Output statistics for given statistic names only:
---    
+--
 --                       @runstats stop "n=redo size,user commits"
---    
+--
 --                  4. Output statistics for statistics containing search phrase:
---    
+--
 --                        @runstats stop l=memory
---    
+--
 --                  5. Suppress the time model report (all formats):
---    
+--
 --                        @runstats stop "" false
 --                        @runstats stop t=1000 false
 --                        @runstats stop "n=redo size" false
 --                        @runstats stop l=memory false
---                  
+--
 -- Notes:           1. As described in Configuration above, this script writes and removes
 --                     a couple of temporary files during execution.
 --
 --                  2. A PL/SQL package version of RunStats is also available.
---                  
+--
 -- Disclaimer:      http://www.oracle-developer.net/disclaimer.php
 --
 -- ----------------------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ set serveroutput on format wrapped
 
 -- Constants...
 -- -----------------------------------------------------------------------
-define c_rs_version = 2.01
+define c_rs_version = 2.02
 define c_rs_rmcmd   = "del"  --Windows
 --define c_rs_rmcmd   = "rm"   --*nix
 define c_rs_init    = "_rs_init.sql"
@@ -135,7 +135,7 @@ col 3 new_value 3
 select null as "1"
 ,      null as "2"
 ,      null as "3"
-from   dual 
+from   dual
 where  1=2;
 
 
@@ -286,7 +286,7 @@ declare
                           union all
                           select 'LATCH'
                           ,      name
-                          ,      gets 
+                          ,      gets
                           from   v$latch
                           union all
                           select 'TIME'
@@ -380,7 +380,7 @@ declare
             dbms_output.put_line(rpad('Type',6) || rpad('Name',50) || lpad('Run1',13) ||
                                  lpad('Run2',13) || lpad('Diff',13));
             dbms_output.put_line(rpad('-',5,'-') || ' ' || rpad('-',50,'-') || ' ' ||
-                                 rpad('-',12,'-') || ' ' || rpad('-',12,'-') || ' ' || 
+                                 rpad('-',12,'-') || ' ' || rpad('-',12,'-') || ' ' ||
                                  rpad('-',12,'-'));
          end if;
       end sh;
@@ -405,7 +405,7 @@ declare
 
          case p_stattype
             when 'TIME' then
-               if v_diff > 0 then
+               if abs(v_diff) > 0 then
                   aa_stmstats(aa_stmstats.count+1) := v_output;
                end if;
             when 'TIMER' then
@@ -416,7 +416,7 @@ declare
                      l1 := l1 + p_r1_value;
                      l2 := l2 + p_r2_value;
                   end if;
-                  if (&v_rs_option = 1 and v_diff >= &v_rs_threshold)
+                  if (&v_rs_option = 1 and abs(v_diff) >= &v_rs_threshold)
                   or (&v_rs_option = 2 and p_statname in (&v_rs_name_list))
                   or (&v_rs_option = 3 and p_statname like &v_rs_name_like)
                   or  &v_rs_option = 4
@@ -462,7 +462,7 @@ declare
       o(aa_tmrstats);
       nl;
       dbms_output.put_line( 'Comments:' );
-      dbms_output.put_line( '1) ' || case 
+      dbms_output.put_line( '1) ' || case
                                         when t1.ela = t2.ela
                                         then 'Run1 took the same time as Run2'
                                         when t2.ela > t1.ela
@@ -474,10 +474,10 @@ declare
       dbms_output.put_line( '2) ' || case
                                         when t1.cpu = t2.cpu
                                         then 'Run1 used the same amount of CPU time as Run2'
-                                        when t2.ela > t1.ela
-                                        then 'Run1 used ' || round((1-(t1.ela/t2.ela))*100,1) ||
+                                        when t2.cpu > t1.cpu
+                                        then 'Run1 used ' || round((1-(t1.cpu/t2.cpu))*100,1) ||
                                              '% less CPU time than Run2'
-                                       else 'Run2 used ' || round((1-(t2.ela/t1.ela))*100,1) ||
+                                        else 'Run2 used ' || round((1-(t2.cpu/t1.cpu))*100,1) ||
                                              '% less CPU time than Run1'
                                      end );
 
@@ -541,7 +541,7 @@ declare
       -- -----------------------------------------
       sh('Statistics report');
       o(aa_runstats);
-      
+
       -- Total latches report...
       -- -----------------------
       sh('Latching report');
@@ -549,7 +549,7 @@ declare
       o(aa_runstats);
       nl;
       dbms_output.put_line('Comments:');
-      dbms_output.put_line( '1) ' || case 
+      dbms_output.put_line( '1) ' || case
                                         when l1 = l2
                                         then 'Run1 used the same number of latches as Run2'
                                         when l2 > l1
@@ -650,8 +650,8 @@ begin
          rs_report;
          rs_reset;
    else
-      raise_application_error( 
-         -20000, 
+      raise_application_error(
+         -20000,
          'Incorrect option used at position 1 '||
          '[used="&v_rs_snap"] [valid=start,middle,pause,resume,stop]',
          false );

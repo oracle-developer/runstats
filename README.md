@@ -21,6 +21,7 @@ Version  Date            Description
 1.1      January 2009    Added extended reporting options
 2.0      October 2011    Re-design for standalone script version
 2.01     November 2011   Bug-fix for numeric overflow
+2.02     May 2022        Bug-fix for CPU reporting
 ```
 
 ### 4.0 Credits
